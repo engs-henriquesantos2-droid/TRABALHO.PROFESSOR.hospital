@@ -72,3 +72,43 @@ struct Pilha {
         return p;
     }
 };
+
+// R3 - Lista de medicos
+struct Medicos {
+    Node* inicio = nullptr;
+    Node* fim = nullptr;
+
+    void adicionar(string nome) {
+    Node* novo = new Node(0, 1, nome);
+
+        if (!fim)
+            inicio = fim = novo;
+        else {
+            fim->prox = novo;
+            fim = novo;
+        }
+    }
+
+    Node* chamar() {
+        if (!inicio) return nullptr;
+
+        Node* p = inicio;
+        inicio = inicio->prox;
+
+        if (!inicio) fim = nullptr;
+
+        p->prox = nullptr;
+        return p;
+    }
+
+    void retornar(Node* medico) {
+        if (!medico) return;
+
+        if (!fim)
+            inicio = fim = medico;
+        else {
+            fim->prox = medico;
+            fim = medico;
+        }
+    }
+};
