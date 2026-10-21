@@ -48,3 +48,27 @@ struct Fila
         return p;
     }
 };
+
+// R2 - Historico em pilha
+struct Pilha {
+    Node* topo = nullptr;
+
+    bool isEmpty() {
+        return topo == nullptr;
+    }
+
+    void push(int id, int urgencia, string nome) {
+        Node* novo = new Node(id, urgencia, nome);
+        novo->prox = topo;
+        topo = novo;
+    }
+
+    Node* pop() {
+        if (isEmpty()) return nullptr;
+
+        Node* p = topo;
+        topo = topo->prox;
+        p->prox = nullptr;
+        return p;
+    }
+};
