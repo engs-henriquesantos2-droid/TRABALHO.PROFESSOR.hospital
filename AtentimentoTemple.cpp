@@ -1,4 +1,4 @@
-// atividade hospital usando fila, pilha e lista encadeada
+
 #include <iostream>
 #include <string>
 using namespace std;
@@ -14,40 +14,44 @@ struct Node
         : valor(v), urgencia(u), nome(n), prox(nullptr) {}
 };
 
-// R1 - Fila de pacientes
-struct Fila {
+// R1 - Fila de pacientes por urgencia
+struct Fila
+{
     Node *frente = nullptr;
     Node *tras = nullptr;
 
     void enqueue(int id, int urgencia, string nome)
     {
-      Node *novo = new Node(id, urgencia, nome);
+        Node *novo = new Node(id, urgencia, nome);
 
-     if (!frente){
+        if (!frente) {
             frente = tras = novo;
             return;
-     }
-    
+        }
 
-    if (urgencia > frente->urgencia) {
-        novo->prox = frente;
-        frente = novo;
-        return;
+        if (urgencia > frente->urgencia) {
+            novo->prox = frente;
+            frente = novo;
+            return;
+        }
+
+        Node *atual = frente;
+
+        while (atual->prox &&
+               atual->prox->urgencia >= urgencia) {
+            atual = atual->prox;
+        }
+
+        novo->prox = atual->prox;
+        atual->prox = novo;
+
+        if (!novo->prox) {
+            tras = novo;
+        }
     }
 
-    Node *atual = frente;
-    while (atual->prox && atual->prox->urgencia >= urgencia) {
-        atual = atual->prox;
-    }
-
-    novo->prox = atual->prox;
-    atual->prox = novo;
-
-    if (!novo->prox) {
-        tras = novo;
-    }
-
-    Node *dequeue() {
+    Node *dequeue()
+    {
         if (!frente)
             return nullptr;
 
@@ -63,92 +67,127 @@ struct Fila {
 };
 
 // R2 - Historico em pilha
-struct Pilha {
-    Node* topo = nullptr;
+struct Pilha
+{
+    Node *topo = nullptr;
 
-    bool isEmpty() {
+    bool isEmpty()
+    {
         return topo == nullptr;
     }
 
-    void push(int id, int urgencia, string nome) {
-        Node* novo = new Node(id, urgencia, nome);
+    void push(int id, int urgencia, string nome)
+    {
+        Node *novo = new Node(id, urgencia, nome);
         novo->prox = topo;
         topo = novo;
     }
 
-    Node* pop() {
-        if (isEmpty()) return nullptr;
+    Node *pop()
+    {
+        if (isEmpty())
+            return nullptr;
 
-        Node* p = topo;
+        Node *p = topo;
         topo = topo->prox;
         p->prox = nullptr;
+
         return p;
+    }
+
+    ~Pilha()
+    {
+        while (!isEmpty()) {
+            Node *p = pop();
+            delete p;
+        }
     }
 };
 
-// R3 - Lista de medicos
-struct Medicos {
-    Node* inicio = nullptr;
-    Node* fim = nullptr;
+// R3 - Lista encadeada de medicos
+struct Medicos
+{
+    Node *inicio = nullptr;
+    Node *fim = nullptr;
 
-    void adicionar(string nome) {
-    Node* novo = new Node(0, 1, nome);
+    void adicionar(string nome)
+    {
+        Node *novo = new Node(0, 1, nome);
 
-        if (!fim)
+        if (!fim) {
             inicio = fim = novo;
-        else {
+        } else {
             fim->prox = novo;
             fim = novo;
         }
     }
 
-    Node* chamar() {
-        if (!inicio) return nullptr;
+    Node *chamar()
+    {
+        if (!inicio)
+            return nullptr;
 
-        Node* p = inicio;
+        Node *p = inicio;
         inicio = inicio->prox;
 
-        if (!inicio) fim = nullptr;
+        if (!inicio)
+            fim = nullptr;
 
         p->prox = nullptr;
         return p;
     }
 
-    void retornar(Node* medico) {
-        if (!medico) return;
+    void retornar(Node *medico)
+    {
+        if (!medico)
+            return;
 
-        if (!fim)
+        medico->prox = nullptr;
+
+        if (!fim) {
             inicio = fim = medico;
-        else {
+        } else {
             fim->prox = medico;
             fim = medico;
+        }
+    }
+
+    ~Medicos()
+    {
+        while (inicio) {
+            Node *p = chamar();
+            delete p;
         }
     }
 };
 
 // R4 - Imprimir historico preservando a pilha
-void ImprimirHistorico(Pilha& historico) {
+void ImprimirHistorico(Pilha &historico)
+{
     Pilha aux;
 
     while (!historico.isEmpty()) {
-        Node* p = historico.pop();
+        Node *p = historico.pop();
 
         cout << "Paciente: " << p->nome
              << " | ID: " << p->valor
-             << " | Urgencia: " << p->urgencia << endl;
+             << " | Urgencia: " << p->urgencia
+             << endl;
 
         aux.push(p->valor, p->urgencia, p->nome);
         delete p;
     }
 
     while (!aux.isEmpty()) {
-        Node* p = aux.pop();
+        Node *p = aux.pop();
+
         historico.push(p->valor, p->urgencia, p->nome);
         delete p;
     }
 }
 
-int main() {
+int main()
+{
     Fila fila;
     Pilha historico;
     Medicos medicos;
@@ -162,16 +201,18 @@ int main() {
     fila.enqueue(2, 1, "Joao");
     fila.enqueue(3, 3, "Maria");
 
-    // Atendimento
+    cout << "=== ATENDIMENTOS ===" << endl;
+
+    // Atendimento dos pacientes
     while (fila.frente && medicos.inicio) {
-        Node* paciente = fila.dequeue();
-        Node* medico = medicos.chamar();
+        Node *paciente = fila.dequeue();
+        Node *medico = medicos.chamar();
 
         cout << paciente->nome
              << " atendido pelo medico "
              << medico->nome << endl;
 
-        // Registra o atendimento
+        // Registra o atendimento no historico
         historico.push(
             paciente->valor,
             paciente->urgencia,
@@ -185,8 +226,14 @@ int main() {
     }
 
     // Relatorio final
-    cout << "\n=== HISTORICO ===\n";
+    cout << "\n=== HISTORICO ===" << endl;
     ImprimirHistorico(historico);
+
+    // Limpa os pacientes que eventualmente sobrarem na fila
+    while (fila.frente) {
+        Node *p = fila.dequeue();
+        delete p;
+    }
 
     return 0;
 }
