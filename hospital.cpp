@@ -125,3 +125,68 @@ struct Medicos {
         }
     }
 };
+
+// R4 - Imprimir historico preservando a pilha
+void ImprimirHistorico(Pilha& historico) {
+    Pilha aux;
+
+    while (!historico.isEmpty()) {
+        Node* p = historico.pop();
+
+        cout << "Paciente: " << p->nome
+             << " | ID: " << p->valor
+             << " | Urgencia: " << p->urgencia << endl;
+
+        aux.push(p->valor, p->urgencia, p->nome);
+        delete p;
+    }
+
+    while (!aux.isEmpty()) {
+        Node* p = aux.pop();
+        historico.push(p->valor, p->urgencia, p->nome);
+        delete p;
+    }
+}
+
+int main() {
+    Fila fila;
+    Pilha historico;
+    Medicos medicos;
+
+    // Medicos de plantao
+    medicos.adicionar("Dr.Julio");
+    medicos.adicionar("Dr.Marcos");
+
+    // Cadastro de pacientes
+    fila.enqueue(1, 2, "Ana");
+    fila.enqueue(2, 1, "Joao");
+    fila.enqueue(3, 3, "Maria");
+
+    // Atendimento
+    while (fila.frente && medicos.inicio) {
+        Node* paciente = fila.dequeue();
+        Node* medico = medicos.chamar();
+
+        cout << paciente->nome
+             << " atendido pelo medico "
+             << medico->nome << endl;
+
+        // Registra o atendimento
+        historico.push(
+            paciente->valor,
+            paciente->urgencia,
+            paciente->nome
+        );
+
+        delete paciente;
+
+        // Medico retorna ao final da lista
+        medicos.retornar(medico);
+    }
+
+    // Relatorio final
+    cout << "\n=== HISTORICO ===\n";
+    ImprimirHistorico(historico);
+
+    return 0;
+}
