@@ -15,26 +15,39 @@ struct Node
 };
 
 // R1 - Fila de pacientes
-struct Fila
-{
+struct Fila {
     Node *frente = nullptr;
     Node *tras = nullptr;
 
     void enqueue(int id, int urgencia, string nome)
     {
-        Node *novo = new Node(id, urgencia, nome);
+      Node *novo = new Node(id, urgencia, nome);
 
-        if (!tras)
+     if (!frente){
             frente = tras = novo;
-        else
-        {
-            tras->prox = novo;
-            tras = novo;
-        }
+            return;
+     }
+    
+
+    if (urgencia > frente->urgencia) {
+        novo->prox = frente;
+        frente = novo;
+        return;
     }
 
-    Node *dequeue()
-    {
+    Node *atual = frente;
+    while (atual->prox && atual->prox->urgencia >= urgencia) {
+        atual = atual->prox;
+    }
+
+    novo->prox = atual->prox;
+    atual->prox = novo;
+
+    if (!novo->prox) {
+        tras = novo;
+    }
+
+    Node *dequeue() {
         if (!frente)
             return nullptr;
 
